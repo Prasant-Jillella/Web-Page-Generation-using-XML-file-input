@@ -1,0 +1,191 @@
+<html>
+     <head>
+	     <style type="text/css">
+		     .div0
+			 {
+			     width:900px;
+				 height:400px;
+				 margin:auto;
+				 margin-top:100px;
+			 }
+			 .h10
+			 {
+			     margin-left:220px;
+				 margin-top:100px;
+			 }
+			 .input0
+			 {
+			     margin-left:320px;
+				 height:30px;
+				 width:230px;
+			 }
+			 .input1
+			 {
+			     margin-left:390px;
+				 width:100px;
+				 height:30px;
+				 border-top-left-radius:3px;
+			 }
+	     </style>
+	 </head>
+	 <body>
+	 <script>
+	         function myfun(form1)
+             {
+			     var data=form1.url.value;
+                 if(data==""||/^\s+$/.test(data))
+                 {
+                     alert("Please Enter a Link");
+                     document.getElementById("form1").reset();
+                     return false;
+                 }
+				 function loadXML(data)
+				 {
+				     if(window.XMLHttpRequest)
+					 {
+					     xmlhttp=new XMLHttpRequest();
+					 }
+					 else
+					 {
+					     xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+					 }
+					 xmlhttp.open("GET",data,false);
+					 xmlhttp.send();
+					 if(xmlhttp.status==404)
+					 {
+					 	if(data.indexOf(".xml")>=0)
+						{
+							alert("Entered file Not found");
+							document.getElementById("form1").reset();
+						}
+						else
+						{
+                           alert("Entered file is not an XML file");
+							document.getElementById("form1").reset();
+						}
+					 }
+					 else if(xmlhttp.status==200)
+					 {
+						xmldoc=xmlhttp.responseXML;
+						if(xmldoc==null)
+						{
+							alert("Entered file is not an xml file or XML file structure is wrong");
+							document.getElementById("form1").reset();
+							return false;
+						}
+						else if(xmldoc.documentElement.nodeName=="parsererror")
+						{
+                            alert("Entered file is not an xml file or XML file structure is wrong");
+							document.getElementById("form1").reset();
+							return false;
+						}
+						else
+						{
+							return xmldoc;
+						}
+					 }
+					 xmldoc=xmlhttp.responseXML;
+					 return xmldoc;
+				 }
+				     xmldoc=loadXML(data);
+				     if(xmldoc.getElementsByTagName("Row").length)
+					 {
+						 if (window.ActiveXObject) {
+							 if (xmldoc.parseError.errorCode != 0) {
+								 var myerror = xmldoc.parseError;
+								 generateError(xmldoc);
+								 hWin = window.open("", "Error", "scrollbars=1,height=300,width=340");
+								 hWin.document.write(html_text);
+							 }
+							 else {
+								 generateHTML(xmldoc);
+								 hWin = window.open("", "Assignment4", "scrollbars=1,height=800,width=1000");
+								 hWin.document.write(html_text);
+							 }
+						 }
+						 else {
+							 xmldoc.onload = generateHTML(xmldoc);
+							 hWin = window.open("", "Assignment4", "scrollbars=1, height=800,width=1000");
+							 hWin.document.write(html_text);
+						 }
+						 hWin.document.close();
+					 }
+				     else
+					 {
+					 	alert("The file does not have Company Entries");
+						 document.getElementById("form1").reset();
+					 }
+			 }
+			 function generateHTML(xmldoc)
+			 {
+			     root=xmldoc.DocumentElement;
+				 html_text="<html><head><title>Assignment4</title></head><body>";
+				 html_text+="<table border='2'><tr>";
+				 len=xmldoc.getElementsByTagName("Data").length; /*gives number of <data> tags in xml file*/
+				 for(i=0;i<len;i++)
+				 {
+					 html_text+="<th>"+xmldoc.getElementsByTagName("Data").item(i).firstChild.nodeValue+"</th>";
+				 }
+				    html_text+="</tr>";
+				lenr=xmldoc.getElementsByTagName("Row").length;
+					 for (i = 0; i < lenr; i++)
+					 {
+						 html_text += "<tr>";
+						 row = xmldoc.getElementsByTagName("Row").item(i);
+						 lenc = row.children.length;
+						 for (j = 0; j < lenc; j++) {
+							 if (row.children[j].nodeName == "Location") {
+								 lens = row.children[j].children.length;
+								 html_text += "<td><ul>";
+								 c = 0;
+								 for (o = 0; o < lens; o++) {
+									 if (row.children[j].children[o].firstChild == null || /^\s+$/.test(row.children[j].children[o].firstChild.nodeValue))
+										 c++;
+									 else
+										 html_text += "<li>" + row.children[j].children[o].firstChild.nodeValue + "</li>";
+								 }
+								 if (c == lens)
+									 html_text += "<li>N.A.</li></ul></td>";
+								 else
+									 html_text += "</ul></td>";
+							 }
+							 else if (row.children[j].nodeName == "HomePage") {
+								 if (row.children[j].firstChild == null)
+									 html_text += "<td></td>";
+								 else
+									 html_text += "<td><a href=" + xmldoc.getElementsByTagName("Row").item(i).children[j].firstChild.nodeValue + "/>" + xmldoc.getElementsByTagName("Row").item(i).children[j].firstChild.nodeValue + "</td>";
+							 }
+							 else if (row.children[j].nodeName == "Logo") {
+							 	if (row.children[j].firstChild == null)
+							 		 html_text += "<td height='200' width='200'></td>";
+								else
+								 html_text += "<td><img src=" + row.children[j].firstChild.nodeValue + " width='200' height='200'/></td>";
+							 }
+							 else if (row.children[j].nodeName == "Slot") {
+								 if (row.children[j].firstChild == null)
+									 html_text += "<td></td>";
+								 else
+									 html_text += "<td>" + row.children[j].firstChild.nodeValue + "</td>";
+							 }
+							 else {
+								 if (row.children[j].firstChild == null)
+									 html_text += "<td></td>";
+								 else
+									 html_text += "<td>" + row.children[j].firstChild.nodeValue + "</td>";
+							 }
+						 }
+						 html_text += "</tr>";
+					 }
+				html_text+="</table><noscript/></body></html>";
+			}
+	 </script>
+		 <form name="myform" id="form1">
+		     <div class="div0">
+		         <h2 class="h10">Enter URL for Newspaper List XML File</h2>
+		         <input class="input0" type="text" value="" name="url" ><br/><br/>
+		         <input class="input1" type="submit" value="Submit Query" onClick="myfun(this.form)">
+		     </div>
+		 </form>
+      <noscript/>
+	 </body>
+</html>
